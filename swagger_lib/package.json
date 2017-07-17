@@ -1,0 +1,23 @@
+{
+  "name": "restio-swagger",
+  "version": "1.0.0",
+  "description": "Swagger generator API with annotations",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "swagger",
+    "api"
+  ],
+  "author": "ASergey",
+  "license": "MIT",
+  "dependencies": {
+    "annotations": "^0.1.340",
+    "async": "^2.5.0",
+    "conga-annotations": "^1.0.0",
+    "lodash": "^4.17.4",
+    "minimist": "^1.2.0",
+    "swagger-ui-express": "^2.0.2"
+  }
+}

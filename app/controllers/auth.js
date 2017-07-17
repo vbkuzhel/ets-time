@@ -12,6 +12,18 @@ const jwt = require('jsonwebtoken');
 const User = require('./../models/user');
 
 /* Auth user */
+/**
+ * @route auth/login
+ * @method POST
+ * @operationId login
+ * @summary Create new user
+ * @description Create new user
+ * @headers authorization
+ * @body email,password
+ * @scheme createdUser
+ * @responses 201=User successfully created, 400
+ */
+
 router.post('/', (req, res, next) => {
   const rules = {
     email: 'required|email|email_exist',
