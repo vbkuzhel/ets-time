@@ -11,7 +11,8 @@ import 'react-select/dist/react-select.css';
 import {
   toggleChangeTrack,
   createTrack,
-  updateTrack
+  updateTrack,
+  getLibraries
 } from './../../store/actions/trackActions';
 import { clearErrorField } from './../../store/actions/generalActions';
 
@@ -48,6 +49,8 @@ class SingeTrack extends React.Component {
     } else {
       this.props.createTrack(this.state, token);
     }
+
+    this.props.getLibraries(token, true);
   };
 
   handleInputChange = e => {
@@ -241,5 +244,6 @@ export default connect(mapStateToProps, {
   toggleChangeTrack,
   createTrack,
   updateTrack,
-  clearErrorField
+  clearErrorField,
+  getLibraries
 })(SingeTrack);

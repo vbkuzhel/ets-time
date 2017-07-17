@@ -9,7 +9,7 @@ import LoadingPage from './LoadingPage';
 
 // Constants
 const token = localStorage.getItem('token');
-const hiddenFromMember = ['/users', '/skills', '/user-skills', '/stats'];
+const hiddenFromMember = ['/users', '/skills', '/user-skills'];
 
 const checkMe = async props => {
   let auth = await meApi(token);

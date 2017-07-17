@@ -162,6 +162,16 @@ class Topbar extends React.Component {
                 >
                   <TrackIcon />
                 </Link>
+
+                <Link
+                  to="/stats"
+                  className={classnames("topbar__menu--btn", {
+                    "topbar__menu--active": statUrl
+                  })}
+                  style={{ background: bgColor }}
+                >
+                  <ChartIcon />
+                </Link>
               </div>}
 
           <div className="topbar__icons" style={{ color: bgColor }}>

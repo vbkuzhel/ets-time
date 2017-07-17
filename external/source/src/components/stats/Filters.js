@@ -12,6 +12,7 @@ import { getUsers } from './../../store/actions/userActions';
 
 // Helpers
 import { getInitFilters } from './../../shared/HelpService';
+import { withRouter } from "react-router-dom";
 
 class Filters extends React.Component {
   constructor(props) {
@@ -27,12 +28,13 @@ class Filters extends React.Component {
   }
 
   componentWillReceiveProps() {
+
     if (this.state.state_selected_user === null && this.props.user_id) {
       this.setState({ state_selected_user: this.props.user_id, user: this.props.user_id });
     }
 
     if (this.state.state_selected_user === null && this.props.user_id) {
-      this.getStatByUserID(this.props.token, this.props.user_id, this.state.date);
+      this.getStatByUserID(this.props.token, 3, this.state.date);
 
       let date = this.state.dates[this.state.state_selected_date].label;
       let username = this.props.activeUser.first_name + ' ' + this.props.activeUser.last_name;
@@ -123,5 +125,6 @@ function mapStateToProps(state) {
     activeUser: state.userReducer.activeUser
   };
 }
-
-export default connect(mapStateToProps, { getUsers })(Filters);
+export default withRouter(
+  connect(mapStateToProps, { getUsers })(Filters)
+)

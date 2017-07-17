@@ -18,7 +18,7 @@ import { getUsers } from './../../store/actions/userActions';
 import { getInitFiltersForTrack } from './../../shared/HelpService';
 
 class Filters extends React.Component {
-  state = getInitFiltersForTrack();
+  state = Object.assign({}, getInitFiltersForTrack(), { initial: false });
 
   componentDidMount() {
     let { filters } = this.props;
@@ -28,12 +28,13 @@ class Filters extends React.Component {
   componentWillReceiveProps(nextProps) {
     this.setState(nextProps.filters);
 
-    let roles = nextProps.activeUser.roles;
-    if (
-      nextProps.users.length === 0 &&
-      roles &&
-      (roles.includes('owner') || roles.includes('pm'))
-    ) {
+    if (this.state.initial) {
+      return false;
+    }
+
+    const roles = nextProps.activeUser.roles;
+    if (roles && (roles.includes('owner') || roles.includes('pm'))) {
+      this.setState({ initial: true });
       this.props.getUsers(nextProps.token);
     }
   }

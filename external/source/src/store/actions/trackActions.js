@@ -98,15 +98,19 @@ export function updateTrack(data, token) {
   };
 }
 
-export function getLibraries(token) {
+export function getLibraries(token, onlyProjects) {
   return dispatch => {
     getDictionariesApi(token).then(resp => {
       if (resp) {
-        dispatch(setWorkTypes(resp.type_works));
-        dispatch(setStatusTypes(resp.task_status));
-        dispatch(setRoles(resp.roles));
-        dispatch(setPositions(resp.positions));
-        dispatch(setProjects(resp.projects));
+        if (onlyProjects) {
+          dispatch(setProjects(resp.projects));
+        } else {
+          dispatch(setWorkTypes(resp.type_works));
+          dispatch(setStatusTypes(resp.task_status));
+          dispatch(setRoles(resp.roles));
+          dispatch(setPositions(resp.positions));
+          dispatch(setProjects(resp.projects));
+        }
       }
     });
   };
