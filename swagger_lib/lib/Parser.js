@@ -8,13 +8,14 @@ module.exports = {
     return object;
   },
   parseSwagger: (swagger_spec, object) => {
-    console.log(object);
-    let paths = groupBy(object, 'route');
-    each(paths, (elements, key) => {
-      each(elements, (v, k) => {
-        elements[v.method] = {};
+    //console.log(object);
+    let paths = {};
+    let annotations = groupBy(object, 'route');
+    each(annotations, (elements, route) => {
+      paths[route] = {};
+      each(elements, attr => {
+        paths[route][attr.method.toString().toLowerCase()] = {};
       });
-      //console.log(key, '->', element);
     });
 
     console.log(paths);
@@ -33,16 +34,20 @@ const getAttribute = line => {
     let regex = new RegExp(/@([a-z_]+)\s+(.*)$/, 'g');
     let parsedLine = regex.exec(line);
     if (parsedLine) {
-      result = Object.assign(result, { [parsedLine[1]]: parseParams(parsedLine[2]) });
+      result = Object.assign(result, { [parsedLine[1]]: parseParams(parsedLine[1], parsedLine[2]) });
     }
   });
   return Object.keys(result).length ? result : null;
 };
 
-const parseParams = line => {
-  let arrayPattern = new RegExp(/^[a-z,_]+$/, 'gi');
-  if (arrayPattern.test(line)) {
-    line = line.split(',');
+const parseParams = (attr, value) => {
+  switch (attr) {
+    case 'body':
+    case 'headers':
+    case 'responses':
+      value = value.split(',');
+      break;
   }
-  return line;
+
+  return value;
 };
