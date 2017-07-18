@@ -11,12 +11,17 @@ module.exports = {
       name: 'MIT'
     }
   },
-  host: 'http://localhost:1337',
+  host: 'localhost:1337',
   basePath: '/api/v1',
-  schemes: ['http'],
+  tags: [
+    {
+      name: 'Authorization'
+    }
+  ],
   paths: {
     '/pet': {
       post: {
+        tags: ['Authorization'],
         summary: 'Some info',
         description: 'desc',
         operationId: 'per',

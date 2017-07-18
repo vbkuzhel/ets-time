@@ -3,43 +3,60 @@ const fs = require('fs');
 const path = require('path');
 const { waterfall, concat } = require('async');
 const { isArray, compact } = require('lodash');
-const argv = require('minimist')(process.argv.slice(2));
-const { getAnnotationObject } = require('./lib/Parser');
+const { getAnnotationObject, parseSwagger, parsePostman } = require('./lib/Parser');
+const swaggerUi = require('swagger-ui-express');
 
-//const parseFile = (file, cb) => {
-//  fs.readFile(path.join(argv.dir, file), { encoding: 'utf8' }, (err, content) => {
-//    if (err) cb(err);
-//
-//    let parsed = content.match(/\/\*(\*(?!\/)|[^*])*\*\//g);
-//    if (!isArray(parsed) || parsed.length === 0) {
-//      return cb();
-//    }
-//    let filteredContent = parsed.filter(item => /@[A-z0-9_]+/.test(item)).map(item => getAnnotationObject(item));
-//    cb(null, filteredContent);
-//  });
-//};
-//
-//waterfall(
-//  [
-//    cb => fs.readdir(argv.dir, { encoding: 'utf8' }, cb),
-//    (files, cb) => {
-//      // Parse each file, get annotations
-//      concat(files, parseFile, cb);
-//    },
-//    (annotations, cb) => {
-//      cb(null, compact(annotations));
-//    }
-//  ],
-//  (err, result) => {
-//    let swaggerObject = console.log(result);
-//  }
-//);
-
-module.exports = (type_response = 'swagger', cb) => {
-  return cb(null, { [type_response]: 'works fine' });
+const parseFile = (file, cb) => {
+  fs.readFile(file, { encoding: 'utf8' }, (err, content) => {
+    if (err) cb(err);
+    let parsed = content.match(/\/\*(\*(?!\/)|[^*])*\*\//g);
+    if (!isArray(parsed) || parsed.length === 0) {
+      return cb();
+    }
+    try {
+      let filteredContent = parsed.filter(item => /@[A-z0-9_]+/.test(item)).map(item => getAnnotationObject(item));
+      cb(null, filteredContent);
+    } catch (e) {
+      cb(e);
+    }
+  });
 };
 
-//fs.fs.readFile('./../app/controllers/auth.js', 'utf-8', (err, content) => {
-//  let parsed = content.toString().match(/\/\*{2}([A-z\s\S0-9])+\*\//g)[0].split('\n');
-//  console.log(parsed);
-//});
+const Init = (controllers_dir, swagger_spec, type = 'swagger', callback) => {
+  waterfall(
+    [
+      cb => fs.readdir(controllers_dir, { encoding: 'utf8' }, cb),
+      (files, cb) => {
+        let fullFiles = files.map(file => path.resolve(controllers_dir, file));
+        concat(fullFiles, parseFile, cb);
+      },
+      (annotations, cb) => {
+        cb(null, compact(annotations));
+      }
+    ],
+    (err, annotations) => {
+      const spec_content = require(swagger_spec);
+      switch (type) {
+        case 'swagger':
+          callback(err, parseSwagger(spec_content, annotations));
+          break;
+        case 'postman':
+          callback(err, parsePostman(spec_content, annotations));
+          break;
+      }
+    }
+  );
+};
+
+module.exports = (app, root_dir, dir) => {
+  const swagger_spec = path.join(root_dir, 'swagger.spec.js');
+  const controllers_dir = path.join(root_dir, dir);
+
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup('/swagger.json'));
+  app.use('/:type(swagger|postman).json', (req, res, next) => {
+    Init(controllers_dir, swagger_spec, req.params.type, (err, json_object) => {
+      if (err) return next(err);
+      res.json(json_object);
+    });
+  });
+};

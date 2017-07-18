@@ -15,6 +15,7 @@ const User = require('./../models/user');
 /**
  * @route auth/login
  * @method POST
+ * @tag Authorization
  * @operationId login
  * @summary Create new user
  * @description Create new user
@@ -64,6 +65,27 @@ router.post('/', (req, res, next) => {
 });
 
 /* Me */
+/**
+ * @route auth/me
+ * @method HEAD
+ * @tag Authorization
+ * @operationId me
+ * @summary Get information about current user
+ * @headers authorization
+ * @scheme User
+ * @responses 200
+ */
+
+/**
+ * @route auth/me
+ * @method GET
+ * @tag Authorization
+ * @operationId me
+ * @summary Get information about current user
+ * @headers authorization
+ * @scheme User
+ * @responses 200
+ */
 router.get('/me', auth, (req, res) => res.json(req._user));
 
 module.exports = router;

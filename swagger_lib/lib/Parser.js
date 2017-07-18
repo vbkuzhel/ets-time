@@ -1,8 +1,25 @@
-const { each, filter } = require('lodash');
+const { each, filter, assign, groupBy } = require('lodash');
 
 module.exports = {
   getAnnotationObject: content => {
     return getAttribute(content);
+  },
+  parsePostman: (swagger_spec, object) => {
+    return object;
+  },
+  parseSwagger: (swagger_spec, object) => {
+    console.log(object);
+    let paths = groupBy(object, 'route');
+    each(paths, (elements, key) => {
+      each(elements, (v, k) => {
+        elements[v.method] = {};
+      });
+      //console.log(key, '->', element);
+    });
+
+    console.log(paths);
+
+    return swagger_spec;
   }
 };
 
@@ -24,10 +41,8 @@ const getAttribute = line => {
 
 const parseParams = line => {
   let arrayPattern = new RegExp(/^[a-z,_]+$/, 'gi');
-
   if (arrayPattern.test(line)) {
     line = line.split(',');
   }
-
   return line;
 };
