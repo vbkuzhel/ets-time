@@ -1,4 +1,4 @@
-const { each, filter, assign, groupBy } = require('lodash');
+const { each, filter, assign, groupBy, map, ke } = require('lodash');
 
 module.exports = {
   getAnnotationObject: content => {
@@ -8,17 +8,56 @@ module.exports = {
     return object;
   },
   parseSwagger: (swagger_spec, object) => {
-    //console.log(object);
+    let { _extra: { responses: extra_responses, parameters: extra_parameters } } = swagger_spec;
+
     let paths = {};
     let annotations = groupBy(object, 'route');
     each(annotations, (elements, route) => {
       paths[route] = {};
+      let parameters = [];
       each(elements, attr => {
-        paths[route][attr.method.toString().toLowerCase()] = {};
+        let {
+          tags,
+          summary,
+          description: desc,
+          method,
+          operationId: oid,
+          consumes = ['application/json'],
+          produces = ['application/json'],
+          responses: modifiedResponses,
+          headers: modifiedHeaders,
+          body: modifiedBody
+        } = attr;
+
+        method = method.toString().toLowerCase();
+
+        // modify responses
+        let responses = {};
+        each(modifiedResponses, item => {
+          responses[item.replace(/[^\d]+/, '')] = extra_responses[item];
+        });
+        each(modifiedHeaders, item => {
+          parameters.push(extra_parameters[item]);
+        });
+        each(modifiedBody, item => {
+          parameters.push(extra_parameters[item]);
+        });
+
+        paths[route][method] = assign(
+          {},
+          { tags },
+          { summary },
+          { desc },
+          { oid },
+          { consumes },
+          { produces },
+          { parameters },
+          { responses }
+        );
       });
     });
 
-    console.log(paths);
+    swagger_spec = assign(swagger_spec, { paths: paths });
 
     return swagger_spec;
   }
@@ -31,7 +70,7 @@ const getAttribute = line => {
   let filteredLines = filter(lines, line => /@[a-z_]/g.test(line));
 
   each(filteredLines, line => {
-    let regex = new RegExp(/@([a-z_]+)\s+(.*)$/, 'g');
+    let regex = new RegExp(/@([a-z_]+)\s+(.*)$/, 'gi');
     let parsedLine = regex.exec(line);
     if (parsedLine) {
       result = Object.assign(result, { [parsedLine[1]]: parseParams(parsedLine[1], parsedLine[2]) });
@@ -42,8 +81,11 @@ const getAttribute = line => {
 
 const parseParams = (attr, value) => {
   switch (attr) {
+    case 'query':
     case 'body':
+    case 'tags':
     case 'headers':
+    case 'consumes':
     case 'responses':
       value = value.split(',');
       break;
